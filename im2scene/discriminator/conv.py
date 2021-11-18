@@ -2,6 +2,9 @@ import torch.nn as nn
 from math import log2
 from im2scene.layers import ResnetBlock
 
+import sys
+sys.path.insert(0, '/home/jupyter/pipelines/utils/')
+import replication_utils
 
 class DCDiscriminator(nn.Module):
     ''' DC Discriminator class.
@@ -33,9 +36,17 @@ class DCDiscriminator(nn.Module):
         if x.shape[1] != self.in_dim:
             x = x[:, :self.in_dim]
         for layer in self.blocks:
-            x = self.actvn(layer(x))
-
+            x = layer(x)
+#             print(x.shape)
+#             print(replication_utils.noncentral_checksum(x))
+#             print()
+            x = self.actvn(x)
+#             print(x.shape)
+#             print(replication_utils.noncentral_checksum(x))
+#             print()
+#         print(x.shape)
         out = self.conv_out(x)
+  #       print(out.shape)
         out = out.reshape(batch_size, 1)
         return out
 

@@ -8,6 +8,10 @@ import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 from im2scene.camera import get_camera_mat, get_random_pose, get_camera_pose
 
+import sys
+sys.path.insert(0, '/home/jupyter/pipelines/utils/')
+import soft_checksums
+nc = soft_checksums.noncentral_checksum
 
 class Generator(nn.Module):
     ''' GIRAFFE Generator Class.
@@ -115,14 +119,16 @@ class Generator(nn.Module):
                 rgb = rgb_v
             return rgb
 
-    def get_n_boxes(self):
+    # done
+    def get_n_boxes(self): # done
         if self.bounding_box_generator is not None:
             n_boxes = self.bounding_box_generator.n_boxes
         else:
             n_boxes = 1
         return n_boxes
 
-    def get_latent_codes(self, batch_size=32, tmp=1.):
+    # done
+    def get_latent_codes(self, batch_size=32, tmp=1.): # done
         z_dim, z_dim_bg = self.z_dim, self.z_dim_bg
 
         n_boxes = self.get_n_boxes()
@@ -135,7 +141,8 @@ class Generator(nn.Module):
 
         return z_shape_obj, z_app_obj, z_shape_bg, z_app_bg
 
-    def sample_z(self, size, to_device=True, tmp=1.):
+    # done
+    def sample_z(self, size, to_device=True, tmp=1.): # done
         z = torch.randn(*size) * tmp
         if to_device:
             z = z.to(self.device)
@@ -303,7 +310,7 @@ class Generator(nn.Module):
         camera_world_i = self.transform_points_to_box(
             camera_world, transformations, i)
         ray_i = pixels_world_i - camera_world_i
-
+        
         p_i = camera_world_i.unsqueeze(-2).contiguous() + \
             di.unsqueeze(-1).contiguous() * ray_i.unsqueeze(-2).contiguous()
         ray_i = ray_i.unsqueeze(-2).repeat(1, 1, n_steps, 1)
@@ -327,6 +334,8 @@ class Generator(nn.Module):
             else:
                 denom_sigma = torch.sum(sigma, dim=0, keepdim=True)
                 denom_sigma[denom_sigma == 0] = 1e-4
+                # denom_sigma = jnp.maximum(denom_sigma, 1e-4)
+                
                 w_sigma = sigma / denom_sigma
                 sigma_sum = torch.sum(sigma, dim=0)
                 feat_weighted = (feat * w_sigma.unsqueeze(-1)).sum(0)
@@ -387,6 +396,9 @@ class Generator(nn.Module):
                             it=0, return_alpha_map=False,
                             not_render_background=False,
                             only_render_background=False):
+        soft_checksums.CHECKSUM_STATES = {}
+        soft_checksums.STATES = {}
+      
         res = self.resolution_vol
         device = self.device
         n_steps = self.n_ray_samples
@@ -396,9 +408,11 @@ class Generator(nn.Module):
         z_shape_obj, z_app_obj, z_shape_bg, z_app_bg = latent_codes
         assert(not (not_render_background and only_render_background))
 
-        # Arange Pixels
+        
         pixels = arange_pixels((res, res), batch_size,
                                invert_y_axis=False)[1].to(device)
+        nc(pixels, name="pixel_scales")
+        
         pixels[..., -1] *= -1.
         # Project to 3D world
         pixels_world = image_points_to_world(
@@ -408,7 +422,10 @@ class Generator(nn.Module):
             n_points, camera_mat=camera_matrices[0],
             world_mat=camera_matrices[1])
         ray_vector = pixels_world - camera_world
-        # batch_size x n_points x n_steps
+        
+        nc(camera_matrices[0], name="camera_matrices_0")
+        nc(camera_matrices[1], name="camera_matrices_1")
+        
         di = depth_range[0] + \
             torch.linspace(0., 1., steps=n_steps).reshape(1, 1, -1) * (
                 depth_range[1] - depth_range[0])
@@ -419,6 +436,12 @@ class Generator(nn.Module):
         n_boxes = latent_codes[0].shape[1]
         feat, sigma = [], []
         n_iter = n_boxes if not_render_background else n_boxes + 1
+    
+        nc(pixels_world, name='pixels_world')
+        nc(camera_world, name='camera_world')
+        nc(ray_vector, name='ray_vector')
+        nc(di, name='di')
+    
         if only_render_background:
             n_iter = 1
             n_boxes = 0
@@ -428,8 +451,16 @@ class Generator(nn.Module):
                     pixels_world, camera_world, di, transformations, i)
                 z_shape_i, z_app_i = z_shape_obj[:, i], z_app_obj[:, i]
 
+                nc(p_i, name='p_i')
+                nc(r_i, name='r_i')
+                nc(z_shape_i, name='z_shape_i')
+                nc(z_app_i, name='z_app_i')
+                
                 feat_i, sigma_i = self.decoder(p_i, r_i, z_shape_i, z_app_i)
-
+           
+                nc(feat_i, name='feat_i')
+                nc(sigma_i, name='sigma_i')
+                
                 if mode == 'training':
                     # As done in NeRF, add noise during training
                     sigma_i += torch.randn_like(sigma_i)
@@ -444,14 +475,26 @@ class Generator(nn.Module):
                 # Reshape
                 sigma_i = sigma_i.reshape(batch_size, n_points, n_steps)
                 feat_i = feat_i.reshape(batch_size, n_points, n_steps, -1)
+                
+                nc(feat_i, name='feat_i_post_reshape')
+                nc(sigma_i, name='sigma_i_post_reshape')
             else:  # Background
                 p_bg, r_bg = self.get_evaluation_points_bg(
                     pixels_world, camera_world, di, bg_rotation)
 
                 feat_i, sigma_i = self.background_generator(
                     p_bg, r_bg, z_shape_bg, z_app_bg)
+                
+                nc(p_bg, name='p_bg')
+                nc(r_bg, name='r_bg')
+                nc(feat_i, name='feat_i_bg')
+                nc(sigma_i, name='sigma_i_bg')
+                
                 sigma_i = sigma_i.reshape(batch_size, n_points, n_steps)
                 feat_i = feat_i.reshape(batch_size, n_points, n_steps, -1)
+                
+                nc(feat_i, name='feat_i_bg_post_reshape')
+                nc(sigma_i, name='sigma_i_bg_post_reshape')
 
                 if mode == 'training':
                     # As done in NeRF, add noise during training
@@ -459,8 +502,19 @@ class Generator(nn.Module):
 
             feat.append(feat_i)
             sigma.append(sigma_i)
+        
+        nc(feat[0], name="feat_0")
+        nc(feat[1], name="feat_1")
+        nc(sigma[0], name="sigma_0")
+        nc(sigma[1], name="sigma_1")
+
         sigma = F.relu(torch.stack(sigma, dim=0))
         feat = torch.stack(feat, dim=0)
+        
+#         sigma = soft_checksums.seed_feat(sigma.shape)
+#         sigma = torch.from_numpy(sigma.astype(np.float32)).cuda()
+#         feat = soft_checksums.seed_feat(feat.shape)*2 - 1
+#         feat = torch.from_numpy(feat.astype(np.float32)).cuda()
 
         if self.sample_object_existance:
             object_existance = self.get_object_existance(n_boxes, batch_size)
@@ -478,12 +532,17 @@ class Generator(nn.Module):
 
         # Composite
         sigma_sum, feat_weighted = self.composite_function(sigma, feat)
+        nc(sigma_sum, name="sigma_sum")
+        nc(feat_weighted, name="feat_weighted")
+        
 
         # Get Volume Weights
         weights = self.calc_volume_weights(di, ray_vector, sigma_sum)
+        nc(weights, name="weights")
         feat_map = torch.sum(weights.unsqueeze(-1) * feat_weighted, dim=-2)
 
         # Reformat output
+        nc(feat_map, name="feat_map_before_reshape")
         feat_map = feat_map.permute(0, 2, 1).reshape(
             batch_size, -1, res, res)  # B x feat x h x w
         feat_map = feat_map.permute(0, 1, 3, 2)  # new to flip x/y

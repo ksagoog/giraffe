@@ -5,6 +5,10 @@ import torch
 import numpy as np
 from numpy import pi
 
+import sys
+sys.path.insert(0, '/home/jupyter/pipelines/utils/')
+import soft_checksums
+nc = soft_checksums.noncentral_checksum
 
 class Decoder(nn.Module):
     ''' Decoder class.
@@ -126,10 +130,20 @@ class Decoder(nn.Module):
             if z_app is None:
                 z_app = torch.randn(batch_size, self.z_dim).to(p_in.device)
         p = self.transform_points(p_in)
+        # print(replication_utils.noncentral_checksum(p.detach().cpu().numpy()))
+        
+#         import pdb
+#         pdb.set_trace()
+        nc(p, name=f'position_encoding_{self.downscale_p_by}')
         net = self.fc_in(p)
+        nc(net, name=f'net_{self.downscale_p_by}')
+        # print(replication_utils.noncentral_checksum(net.detach().cpu().numpy()))
+        
         if z_shape is not None:
             net = net + self.fc_z(z_shape).unsqueeze(1)
+        # print(replication_utils.noncentral_checksum(net.detach().cpu().numpy()))
         net = a(net)
+        # print(replication_utils.noncentral_checksum(net.detach().cpu().numpy()))
 
         skip_idx = 0
         for idx, layer in enumerate(self.blocks):
@@ -139,19 +153,29 @@ class Decoder(nn.Module):
                 net = net + self.fc_p_skips[skip_idx](p)
                 skip_idx += 1
         sigma_out = self.sigma_out(net).squeeze(-1)
-
+        # print("sigma")
+        # print(replication_utils.noncentral_checksum(sigma_out.detach().cpu().numpy()))
         net = self.feat_view(net)
+        # print(replication_utils.noncentral_checksum(net.detach().cpu().numpy()))
         net = net + self.fc_z_view(z_app).unsqueeze(1)
+        
+        nc(net, name=f'net_view_{self.downscale_p_by}')
         if self.use_viewdirs and ray_d is not None:
             ray_d = ray_d / torch.norm(ray_d, dim=-1, keepdim=True)
             ray_d = self.transform_points(ray_d, views=True)
+            nc(ray_d, name=f'ray_d_{self.downscale_p_by}')
             net = net + self.fc_view(ray_d)
+            nc(net, name=f'net_preact_{self.downscale_p_by}')
             net = a(net)
+            nc(net, name=f'net_postact_{self.downscale_p_by}')
             if self.n_blocks_view > 1:
                 for layer in self.blocks_view:
                     net = a(layer(net))
         feat_out = self.feat_out(net)
 
+        nc(feat_out, name=f'feat_out_{self.downscale_p_by}')
+        nc(sigma_out, name=f'sigma_out_{self.downscale_p_by}')
+        
         if self.final_sigmoid_activation:
             feat_out = torch.sigmoid(feat_out)
 

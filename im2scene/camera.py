@@ -1,7 +1,10 @@
 import numpy as np
 import torch
 from scipy.spatial.transform import Rotation as Rot
-
+import sys
+sys.path.insert(0, '/home/jupyter/pipelines/utils/')
+import soft_checksums
+nc = soft_checksums.noncentral_checksum
 
 def get_camera_mat(fov=49.13, invert=True):
     # fov = 2 * arctan( sensor / (2 * focal))
@@ -64,12 +67,16 @@ def get_camera_pose(range_u, range_v, range_r, val_u=0.5, val_v=0.5, val_r=0.5,
     r = r0 + val_r * rr
 
     loc = sample_on_sphere((u, u), (v, v), size=(batch_size))
+    nc(loc, name='loc')
+    
     radius = torch.ones(batch_size) * r
     loc = loc * radius.unsqueeze(-1)
     R = look_at(loc)
+    nc(R, name='rotation_matrix')
     RT = torch.eye(4).reshape(1, 4, 4).repeat(batch_size, 1, 1)
     RT[:, :3, :3] = R
     RT[:, :3, -1] = loc
+    nc(RT, name='rt_matrix')
 
     if invert:
         RT = torch.inverse(RT)
