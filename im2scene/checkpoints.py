@@ -90,7 +90,10 @@ class CheckpointIO(object):
         '''
         print(url)
         print('=> Loading checkpoint from url...')
-        state_dict = model_zoo.load_url(url, progress=True)
+        if torch.cuda.is_available():
+          state_dict = model_zoo.load_url(url, progress=False)
+        else:
+          state_dict = model_zoo.load_url(url, progress=False, map_location=torch.device('cpu'))
         scalars = self.parse_state_dict(state_dict)
         return scalars
 
