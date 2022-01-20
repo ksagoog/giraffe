@@ -1,6 +1,6 @@
 data:
-  path: /home/jupyter/d1/d2/d3/d4/compcars/comprehensive_cars/images/*.jpg
-  fid_file: /home/jupyter/d1/d2/d3/d4/compcars/comprehensive_cars/fid_files/comprehensiveCars_256.npz
+  path: data/comprehensive_cars/images/*.jpg
+  fid_file: data/comprehensive_cars/fid_files/comprehensiveCars_256.npz
   random_crop: True
   img_size: 256
 model:

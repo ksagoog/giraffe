@@ -3,10 +3,6 @@ import numpy as np
 import logging
 logger_py = logging.getLogger(__name__)
 
-import sys
-sys.path.insert(0, '/home/jupyter/pipelines/utils/')
-import soft_checksums
-nc = soft_checksums.noncentral_checksum
 
 def arange_pixels(resolution=(128, 128), batch_size=1, image_range=(-1., 1.),
                   subsample_to=None, invert_y_axis=False):
@@ -83,9 +79,6 @@ def transform_to_world(pixels, depth, camera_mat, world_mat, scale_mat=None,
         scale_mat (tensor): scale matrix
         invert (bool): whether to invert matrices (default: true)
     '''
-#     import pdb
-#     pdb.set_trace()
-    
     assert(pixels.shape[-1] == 2)
 
     if scale_mat is None:
@@ -117,13 +110,10 @@ def transform_to_world(pixels, depth, camera_mat, world_mat, scale_mat=None,
         pixels[:, :3] = pixels[:, :3] * depth.permute(0, 2, 1)
 
     # Transform pixels to world space
-    nc(pixels, name='pixels')
     p_world = scale_mat @ world_mat @ camera_mat @ pixels
-    nc(p_world, name='p_world')
-    
+
     # Transform p_world back to 3D coordinates
     p_world = p_world[:, :3].permute(0, 2, 1)
-    
 
     if is_numpy:
         p_world = p_world.numpy()
@@ -165,7 +155,6 @@ def origin_to_world(n_points, camera_mat, world_mat, scale_mat=None,
         scale_mat (tensor): scale matrix
         invert (bool): whether to invert the matrices (default: false)
     '''
-  
     batch_size = camera_mat.shape[0]
     device = camera_mat.device
     # Create origin in homogen coordinates
@@ -182,12 +171,6 @@ def origin_to_world(n_points, camera_mat, world_mat, scale_mat=None,
         world_mat = torch.inverse(world_mat)
         scale_mat = torch.inverse(scale_mat)
 
-    nc(scale_mat, name="scale_mat")
-    nc(camera_mat, name="camera_mat")
-    nc(world_mat, name="world_mat")
-    nc(p, name='p')
-    nc(scale_mat @ world_mat @ camera_mat, name='dot')
-        
     # Apply transformation
     p_world = scale_mat @ world_mat @ camera_mat @ p
 

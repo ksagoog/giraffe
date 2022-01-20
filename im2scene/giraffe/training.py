@@ -124,14 +124,6 @@ class Trainer(BaseTrainer):
             x_fake = generator(**latents)
         else:
             x_fake = generator()
-        def nq(t, e):
-          return np.quantile(t, e)
-            
-        print(x_fake.cpu().detach().numpy().min(axis=-1).min(axis=-1).min(axis=-1).mean().item())
-        print(x_fake.cpu().detach().numpy().mean(axis=-1).mean(axis=-1).mean(axis=-1).mean().item())
-        print(x_fake.cpu().detach().numpy().max(axis=-1).max(axis=-1).max(axis=-1).mean().item())
-        # print(x_fake.cpu().detach().numpy().std(axis=-1).std(axis=-1).std(axis=-1).mean().item())
-        print("\n")
 
         d_fake = discriminator(x_fake)
         gloss = compute_bce(d_fake, 1)
@@ -165,9 +157,6 @@ class Trainer(BaseTrainer):
 
         reg = 10. * compute_grad2(d_real, x_real).mean()
         loss_d_full += reg
-        
-#         import pdb
-#         pdb.set_trace()
 
         with torch.no_grad():
             if self.multi_gpu:

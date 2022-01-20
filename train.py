@@ -50,9 +50,6 @@ else:
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
-# import pdb
-# pdb.set_trace()
-    
 train_dataset = config.get_dataset(cfg)
 train_loader = torch.utils.data.DataLoader(
     train_dataset, batch_size=batch_size, num_workers=n_workers, shuffle=True,

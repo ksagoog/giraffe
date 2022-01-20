@@ -79,14 +79,9 @@ class Renderer(object):
         # Set rotation range
         is_full_rotation = (bbox_generator.rotation_range[0] == 0
                             and bbox_generator.rotation_range[1] == 1)
-        
-        print(bbox_generator.rotation_range)
-        print(is_full_rotation)
-        
         n_steps = int(n_steps * 2) if is_full_rotation else n_steps
         r_scale = [0., 1.] if is_full_rotation else [0.1, 0.9]
-        print(r_scale)
-        
+
         # Get Random codes and bg rotation
         latent_codes = gen.get_latent_codes(batch_size, tmp=self.sample_tmp)
         bg_rotation = gen.get_random_bg_rotation(batch_size)
