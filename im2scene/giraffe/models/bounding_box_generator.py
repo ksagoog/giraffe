@@ -148,7 +148,7 @@ class BoundingBoxGenerator(nn.Module):
             Rot.from_euler('z', r_val() * 2 * np.pi).as_dcm())
             for i in range(batch_size * self.n_boxes)]
         R = torch.stack(R, dim=0).reshape(
-            batch_size, self.n_boxes, -1).cuda().float()
+            batch_size, self.n_boxes, -1).float()
         return s, t, R
 
     def forward(self, batch_size=32):
