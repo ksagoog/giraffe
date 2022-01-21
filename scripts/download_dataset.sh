@@ -9,7 +9,8 @@ echo "5 - CelebA-HQ Dataset"
 echo "6 - FFHQ Dataset"
 echo "7 - Clevr2 Dataset"
 echo "8 - Clevr2345 Dataset"
-read -p "Enter dataset ID you want to download: " ds_id
+# read -p "Enter dataset ID you want to download: " ds_id
+ds_id=2
 
 if [ $ds_id == 0 ]
 then

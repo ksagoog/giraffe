@@ -8,9 +8,14 @@ import time
 from im2scene import config
 from im2scene.checkpoints import CheckpointIO
 import logging
+import random
 logger_py = logging.getLogger(__name__)
-np.random.seed(0)
-torch.manual_seed(0)
+
+random.seed()
+seed = random.randint(0, 2**32)
+
+np.random.seed(seed)
+torch.manual_seed(seed)
 
 # Arguments
 parser = argparse.ArgumentParser(
