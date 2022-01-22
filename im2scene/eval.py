@@ -183,7 +183,7 @@ def calculate_activation_statistics(files, batch_size=50,
     block_idx = InceptionV3.BLOCK_INDEX_BY_DIM[dims]
     model = InceptionV3([block_idx])
 
-    if cuda:
+    if torch.cuda.is_available():
         model = model.cuda()
 
     act = get_activations(files, model, batch_size, dims, cuda, verbose)
