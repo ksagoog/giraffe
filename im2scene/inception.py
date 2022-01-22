@@ -206,7 +206,7 @@ def fid_inception_v3():
     inception.Mixed_7b = FIDInceptionE_1(1280)
     inception.Mixed_7c = FIDInceptionE_2(2048)
 
-    state_dict = load_state_dict_from_url(FID_WEIGHTS_URL, progress=True)
+    state_dict = torch.load(FID_WEIGHTS_URL)
     inception.load_state_dict(state_dict)
     return inception
 
