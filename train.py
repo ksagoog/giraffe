@@ -175,7 +175,7 @@ while (True):
                                loss_val_best=metric_val_best)
 
         # Run validation
-        if validate_every > 0 and (it % validate_every) == 0 and (it > 0):
+        if validate_every > 0 and (it % validate_every) == 0:
             print("Performing evaluation step.")
             eval_dict = trainer.evaluate()
             metric_val = eval_dict[model_selection_metric]
