@@ -1,4 +1,6 @@
 import torch
+torch.backends.cudnn.enabled = False
+
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
@@ -133,7 +135,7 @@ while (True):
     epoch_it += 1
     print("Epoch: ", epoch_it)
 
-    for batch in train_loader:
+    for batch in train_loader:      
         it += 1
         loss = trainer.train_step(batch, it)
         for (k, v) in loss.items():
