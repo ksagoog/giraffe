@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser(
     description='Train a GIRAFFE model.'
 )
 parser.add_argument('config', type=str, help='Path to config file.')
-parser.add_argument('--out_dir', type=str, default=None, help='Where to write output.')
+parser.add_argument('--out-dir', type=str, default=None, help='Where to write output.')
 parser.add_argument('--no-cuda', action='store_true', help='Do not use cuda.')
 parser.add_argument('--exit-after', type=int, default=-1,
                     help='Checkpoint and exit after specified number of '
