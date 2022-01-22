@@ -40,6 +40,9 @@ if args.out_dir is not None:
   cfg['training']['out_dir'] = args.out_dir
 out_dir = cfg['training']['out_dir']
 
+if args.no_cuda:
+  cfg['training']['n_eval_images'] = 32
+
 backup_every = cfg['training']['backup_every']
 exit_after = args.exit_after
 lr = cfg['training']['learning_rate']
