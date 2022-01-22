@@ -37,9 +37,7 @@ device = torch.device("cuda" if is_cuda else "cpu")
 
 # Shorthands
 if args.out_dir is not None:
-  out_dir = args.out_dir
-else:
-  out_dir = cfg['training']['out_dir']
+  cfg['training']['out_dir'] = args.out_dir
 
 backup_every = cfg['training']['backup_every']
 exit_after = args.exit_after
