@@ -65,7 +65,7 @@ def get_activations(files, model, batch_size=50, dims=2048,
 
             batch = torch.from_numpy(images).type(torch.FloatTensor)
 
-            if cuda:
+            if torch.cuda.is_available():
                 batch = batch.cuda()
 
             pred = model(batch)[0]
@@ -82,7 +82,7 @@ def get_activations(files, model, batch_size=50, dims=2048,
         pred_arr = np.empty((files.shape[0], dims))
         start_idx = 0
         for batch in torch.split(files, batch_size, dim=0):
-            if cuda:
+            if torch.cuda.is_available():
                 batch = batch.cuda()
             pred = model(batch)[0]
 

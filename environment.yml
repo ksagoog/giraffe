@@ -1,4 +1,4 @@
-name: giraffe
+name: giraffe_cu11
 channels:
   - anaconda
   - conda-forge
@@ -8,7 +8,7 @@ dependencies:
   - python=3.8.3
   - pytorch=1.7.0
   - torchvision=0.8.1
-  - cudatoolkit=10.1
+  - cudatoolkit=11.0
   - tensorboard=2.4.0
   - pyyaml=5.3.1
   - python-lmdb=0.98
