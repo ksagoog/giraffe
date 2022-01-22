@@ -101,13 +101,17 @@ if metric_val_best == np.inf or metric_val_best == -np.inf:
 print('Current best validation metric (%s): %.8f'
       % (model_selection_metric, metric_val_best))
 
+print("Getting logger")
 logger = SummaryWriter(os.path.join(out_dir, 'logs'))
+
+print("Got logger")
 # Shorthands
 print_every = cfg['training']['print_every']
 checkpoint_every = cfg['training']['checkpoint_every']
 validate_every = cfg['training']['validate_every']
 visualize_every = cfg['training']['visualize_every']
 
+print("Print model")
 # Print model
 nparameters = sum(p.numel() for p in model.parameters())
 logger_py.info(model)
@@ -123,8 +127,11 @@ if hasattr(model, "generator") and model.generator is not None:
 
 t0b = time.time()
 
+print("Starting training")
+
 while (True):
     epoch_it += 1
+    print("Epoch: ", epoch_it)
 
     for batch in train_loader:
         it += 1
