@@ -127,7 +127,6 @@ while (True):
     epoch_it += 1
 
     for batch in train_loader:
-
         it += 1
         loss = trainer.train_step(batch, it)
         for (k, v) in loss.items():
@@ -139,6 +138,7 @@ while (True):
             for (k, v) in loss.items():
                 info_txt += ', %s: %.4f' % (k, v)
             logger_py.info(info_txt)
+            print("Got batch!")
             t0b = time.time()
 
         # # Visualize output
