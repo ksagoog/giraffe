@@ -24,6 +24,7 @@ parser = argparse.ArgumentParser(
     description='Train a GIRAFFE model.'
 )
 parser.add_argument('config', type=str, help='Path to config file.')
+parser.add_argument('--out_dir', type=str, default=None, help='Where to write output.')
 parser.add_argument('--no-cuda', action='store_true', help='Do not use cuda.')
 parser.add_argument('--exit-after', type=int, default=-1,
                     help='Checkpoint and exit after specified number of '
@@ -35,7 +36,11 @@ is_cuda = (torch.cuda.is_available() and not args.no_cuda)
 device = torch.device("cuda" if is_cuda else "cpu")
 
 # Shorthands
-out_dir = cfg['training']['out_dir']
+if args.out_dir is not None:
+  out_dir = args.out_dir
+else:
+  out_dir = cfg['training']['out_dir']
+
 backup_every = cfg['training']['backup_every']
 exit_after = args.exit_after
 lr = cfg['training']['learning_rate']
