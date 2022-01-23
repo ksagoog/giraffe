@@ -145,10 +145,11 @@ while (True):
     for batch in train_loader:      
         it += 1
         loss = trainer.train_step(batch, it)
-        for (k, v) in loss.items():
-            logger.add_scalar(k, v, it)
+        
         # Print output
         if print_every > 0 and (it % print_every) == 0:
+            for (k, v) in loss.items():
+                logger.add_scalar(k, v, it)
             info_txt = '[Epoch %02d] it=%03d, time=%.3f' % (
                 epoch_it, it, time.time() - t0b)
             for (k, v) in loss.items():
@@ -182,18 +183,19 @@ while (True):
             print("Performing evaluation step.")
             eval_dict = trainer.evaluate()
             metric_val = eval_dict[model_selection_metric]
+            metric_val_best = metric_val
             logger_py.info('Validation metric (%s): %.4f'
                            % (model_selection_metric, metric_val))
 
             for k, v in eval_dict.items():
                 logger.add_scalar('val/%s' % k, v, it)
 
-            if model_selection_sign * (metric_val - metric_val_best) > 0:
-                metric_val_best = metric_val
-                logger_py.info('New best model (loss %.4f)' % metric_val_best)
-                checkpoint_io.backup_model_best('model_best.pt')
-                checkpoint_io.save('model_best.pt', epoch_it=epoch_it, it=it,
-                                   loss_val_best=metric_val_best)
+#             if model_selection_sign * (metric_val - metric_val_best) > 0:
+#                 metric_val_best = metric_val
+#                 logger_py.info('New best model (loss %.4f)' % metric_val_best)
+#                 checkpoint_io.backup_model_best('model_best.pt')
+#                 checkpoint_io.save('model_best.pt', epoch_it=epoch_it, it=it,
+#                                    loss_val_best=metric_val_best)
 
         # Exit if necessary
         if exit_after > 0 and (time.time() - t0) >= exit_after:
