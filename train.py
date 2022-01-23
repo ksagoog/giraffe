@@ -1,5 +1,5 @@
 import torch
-torch.backends.cudnn.enabled = True
+torch.backends.cudnn.enabled = False
 
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
